@@ -88,13 +88,17 @@ fn main() -> Result<(), Box<dyn Error>> {
         let mut ask8_sizes  :  Vec<f64>  = Vec::new();
         let mut ask9_sizes  :  Vec<f64>  = Vec::new();
 
-        let mut order_sizes :  Vec<f64>  = Vec::new();
-        let mut tot_amts    :  Vec<f64>  = Vec::new();
+        let mut ord_sizes_1 :  Vec<f64>  = Vec::new();
+        let mut ord_sizes_2 :  Vec<f64>  = Vec::new();
+        let mut tot_amts_1  :  Vec<f64>  = Vec::new();
+        let mut tot_amts_2  :  Vec<f64>  = Vec::new();
 
         let n_cols: usize = 48;
 
-        let mut order_size: f64 = 0.;
-        let mut tot_amt: f64 = 0.;
+        let mut ord_size_1: f64 = 0.;
+        let mut ord_size_2: f64 = 0.;
+        let mut tot_amt_1:  f64 = 0.;
+        let mut tot_amt_2:  f64 = 0.;
 
         let mut prev_fields: Option<Vec<String>> = None;
 
@@ -126,19 +130,29 @@ fn main() -> Result<(), Box<dyn Error>> {
 
             let amt = fields[2].parse().unwrap_or(0.); 
             let prc = fields[1].parse().unwrap_or(0.); 
+            let sid = fields[3].parse().unwrap_or(0);
 
-            order_size += amt;
-            tot_amt += amt * prc;
+            if sid == 1 {
+                ord_size_1 += amt;
+                tot_amt_1  += amt * prc;
+            } else if sid == 2 {
+                ord_size_2 += amt;
+                tot_amt_2  += amt * prc;
+            }
 
             if skip { 
                 prev_fields = Some(fields);
                 continue; 
             } else {
-                order_sizes.push(order_size);
-                tot_amts.push(tot_amt);
+                ord_sizes_1.push(ord_size_1);
+                ord_sizes_2.push(ord_size_2);
+                tot_amts_1.push(tot_amt_1);
+                tot_amts_2.push(tot_amt_2);
 
-                order_size = 0.;
-                tot_amt = 0.;
+                ord_size_1 = 0.;
+                ord_size_2 = 0.;
+                tot_amt_1 = 0.;
+                tot_amt_2 = 0.;
             }
 
             let id:           u64  = fields[0].parse().unwrap_or(0);
@@ -304,8 +318,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             Series::new("bid8_size", bid8_sizes),
             Series::new("bid9_size", bid9_sizes),
 
-            Series::new("order_size", order_sizes),
-            Series::new("tot_amt", tot_amts),
+            Series::new("ord_size_1", ord_sizes_1),
+            Series::new("ord_size_2", ord_sizes_2),
+            Series::new("tot_amt_1", tot_amts_1),
+            Series::new("tot_amt_2", tot_amts_2),
         ])?;
 
         let mut file = File::create(output_file_path)?;
